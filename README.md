@@ -1,0 +1,36 @@
+# PluHub Spec
+
+公开契约：schemas/manifest.schema.json、schemas/host-config.schema.json、src/index.ts、独立可选的 src/ai.ts。
+
+~~~sh
+pnpm install --frozen-lockfile
+pnpm build
+pnpm test
+pnpm check:compat
+~~~
+
+发布包 @pluhub/contracts。Schema、TS 类型与共享样例随同一个版本发布。compat/v1 是 Manifest v1 基线；同一主版本不得删除属性、收紧类型或添加必填字段。
+
+Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.pages` 额外声明同一前端模块的页面，每页独立声明可见性，默认仅管理员可见。旧的单页声明继续兼容，`pnpm check:compat` 检查既有基线。
+
+可选 `category` 标注插件管理分类，使用 1–64 位小写字母、数字、点或连字符，以字母开头。官方分类为 `core`（基础设施）、`identity`（账号与验证）、`routing`（渠道与路由）、`ingress`（入口协议）、`upstream`（上游适配）、`commerce`（计费与支付）、`traffic`（流量控制）、`operations`（观测与支持）、`tools`（模型工具）。第三方可声明自定义分类；未声明的旧插件继续兼容，控制台按公开元数据兼容识别，无法识别时显示为“其他”。分类只用于展示和筛选，不影响加载、依赖和授权。
+
+可选领域模块 `/workflow` 定义渠道工作流节点、配置和结果；`/ai` 的计划增加可选响应模型、重定向路径、工作流轨迹与输出策略。通用 Kernel、Engine 和 Runtime 不依赖这些领域模块。
+
+`/analytics` 定义用户公开目录、内部聚合查询及脱敏后的排行榜响应。排行榜只返回汇总用量，不包含用户内部 ID、邮箱、凭证或请求明细。
+
+`SiteBranding` 定义 `site.branding@1` 的站点名称、默认语言与主题色；不包含管理配置。`/security` 的 `MailMessage` 支持可选 HTML 正文，同时保留必填纯文本正文，兼容既有 `mail.send@1` 调用。
+
+进程协议 v1 使用 UTF-8 JSON-RPC 2.0，每行一个消息，最大 1 MiB；stdout 只输出协议，日志写 stderr。
+
+宿主依次调用 plugin.initialize、plugin.health。初始化结果返回 protocolVersion: 1 与声明一致的能力列表。capability.invoke 接收 capability、input、config 与 contextId，其中 config 是当前调用的插件配置快照。$/cancelRequest 携带调用 id；调用有超时。排空和停止使用 plugin.drain、plugin.stop。
+
+插件可反向调用 host.call、host.secret、host.log。控制通道不传输逐 Chunk 数据。进程外执行本身不等于沙箱。
+
+请求内的 host.call、host.secret 应携带原 capability.invoke 的 contextId，宿主恢复该请求的配置及能力绑定快照，并传递取消信号。调用完成后不得继续复用 contextId；未知或过期的标识会被拒绝。Go SDK 自动传递 Handler Context 中的标识。
+
+生命周期：Discovered → Validated → Installed → Resolved → Starting → Ready → Active → Draining → Stopped，另有 Failed 状态。
+
+请求阶段：Ingress、Identity、Planning、Admission、Execution、Streaming、Finalize。Finalize 在取消后仍执行。依赖图与执行图独立；请求绑定配置快照。
+
+许可证：Apache-2.0。

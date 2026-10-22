@@ -1,0 +1,57 @@
+{
+  "name": "@pluhub/contracts",
+  "version": "0.1.0-alpha.13",
+  "type": "module",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "schemas",
+    "fixtures"
+  ],
+  "exports": {
+    "./subscription": {
+      "types": "./dist/subscription.d.ts",
+      "import": "./dist/subscription.js"
+    },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./ai": {
+      "types": "./dist/ai.d.ts",
+      "import": "./dist/ai.js"
+    },
+    "./manifest.schema.json": "./schemas/manifest.schema.json",
+    "./host-config.schema.json": "./schemas/host-config.schema.json",
+    "./commerce": {
+      "types": "./dist/commerce.d.ts",
+      "import": "./dist/commerce.js"
+    },
+    "./routing": {
+      "types": "./dist/routing.d.ts",
+      "import": "./dist/routing.js"
+    },
+    "./workflow": {
+      "types": "./dist/workflow.d.ts",
+      "import": "./dist/workflow.js"
+    },
+    "./security": {
+      "types": "./dist/security.d.ts",
+      "import": "./dist/security.js"
+    },
+    "./analytics": {
+      "types": "./dist/analytics.d.ts",
+      "import": "./dist/analytics.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "check:compat": "node scripts/check-compat.mjs"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "typescript": "5.9.3"
+  }
+}

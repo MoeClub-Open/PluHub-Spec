@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"example.consumer","version":"1.0.0","host":">=0.1.0-alpha.2 <0.2.0-0","runtime":{"kind":"process","entry":"consumer"},"provides":[],"requires":["example.service@1"],"optionalRequires":["example.metrics@1"],"dependencies":{"example.provider":"^1.2.0"},"permissions":[]}
