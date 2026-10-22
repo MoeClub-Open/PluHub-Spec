@@ -19,12 +19,25 @@ export interface PaymentCheckout {
   product: Product;
   successUrl: string;
   cancelUrl: string;
+  /** Stable adapter configuration ID, selected by the buyer and bound to the order. */
+  paymentMethod?: string;
+}
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  type?: string;
+}
+export interface PaymentProviderStatus {
+  enabled: boolean;
+  /** Omitted by legacy adapters that expose a single checkout option. */
+  methods?: PaymentMethod[];
 }
 export interface PaymentEvent {
   provider: "stripe" | "epay";
   eventId: string;
   orderId: string;
   paymentId: string;
+  paymentMethod?: string;
   amount: number;
   currency: string;
   kind: "paid" | "renewed" | "cancelled" | "past_due" | "cancel_scheduled";
