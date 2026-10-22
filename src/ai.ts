@@ -108,9 +108,6 @@ export interface ModelPricing {
 export interface RequestPricing extends TokenPrices, ModelPricing {
   /** Consumption multiplier; original prices remain unchanged. */
   multiplier?: number;
-  group?: string;
-  groupMultiplier?: number;
-  userMultiplier?: number;
 }
 export type AIEvent =
   | { type: "text"; text: string }
