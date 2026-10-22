@@ -1,9 +1,14 @@
 /** Optional identity service contracts; Kernel remains independent of authentication methods. */
 export interface CaptchaOptions {
   enabled: boolean;
+  /** Omitted by legacy providers; defaults to Turnstile. */
+  provider?: "turnstile" | "recaptcha" | "geetest";
   siteKey?: string;
+  recaptchaVersion?: "v2" | "v3";
+  recaptchaDomain?: "www.google.com" | "www.recaptcha.net";
 }
 export interface CaptchaVerification {
+  /** Provider token, or a JSON string of GeeTest v4 getValidate() fields. */
   token: string;
   action: "login" | "register" | "email";
 }
@@ -27,5 +32,7 @@ export interface AuthenticationOptions {
   mailEnabled: boolean;
   webauthnEnabled: boolean;
   captcha: { login?: boolean; register?: boolean; email?: boolean };
+  captchaProvider?: CaptchaOptions;
+  /** Legacy alias, provided only when Turnstile is selected. */
   turnstile?: CaptchaOptions;
 }
