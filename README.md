@@ -21,6 +21,8 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 
 `/subscription` 的 `SubscriptionQuota` 支持提供商自有的周期标识、可选展示名称与更新时间，兼容既有 `primary`、`secondary` 周期，用于展示模型或功能专属的订阅额度。
 
+`/ai` 的 `AIRequest.sessionId` 是入口根据客户端会话信息生成的内部隔离标识，经过渠道和提供商节点作用域派生后传给上游。`/subscription` 的 `acquire.sessionId` 用于持久会话账号绑定，不替代 `ownerId` 的归属检查或 `ids` 的渠道授权范围。
+
 `SiteBranding` 定义 `site.branding@1` 的站点名称、默认语言与主题色；不包含管理配置。`/security` 的 `MailMessage` 支持可选 HTML 正文，同时保留必填纯文本正文，兼容既有 `mail.send@1` 调用。
 
 `/security` 的 `CaptchaOptions` 通过可选 `provider` 区分 Turnstile、reCAPTCHA 和极验 v4，省略时兼容旧 Turnstile 提供商。reCAPTCHA 可声明 v2/v3 版本和官方服务域名。`AuthenticationOptions.captchaProvider` 提供通用前端配置，旧 `turnstile` 字段仅用于 Turnstile；`CaptchaVerification.token` 为提供商令牌或极验 v4 验证结果的 JSON 字符串。

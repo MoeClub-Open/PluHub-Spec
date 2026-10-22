@@ -44,6 +44,8 @@ export interface Message {
 }
 export interface AIRequest {
   model: string;
+  /** Internal caller-scoped affinity identity, assigned by the trusted ingress. */
+  sessionId?: string;
   messages: Message[];
   stream: boolean;
   tools: Tool[];

@@ -36,6 +36,8 @@ export type SubscriptionAccountCommand =
       provider: SubscriptionProvider;
       ids: string[];
       ownerId?: string;
+      /** Caller/channel-scoped identity; binds subsequent requests to one account. */
+      sessionId?: string;
     }
   | { action: "refresh"; leaseId: string; version: number }
   | {
