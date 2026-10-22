@@ -22,9 +22,16 @@ export interface SubscriptionQuota {
 }
 /** ai.subscription-accounts@1: acquire, refresh, report and release.
  * Never send returned credentials to the client or use them as a user identity.
- * Acquire once per request, refresh only before response delivery, release in finally.
+ * Release every acquired lease. Failover may acquire another account before response delivery.
  */
 export type SubscriptionAccountCommand =
+  | {
+      action: "availability";
+      provider?: SubscriptionProvider;
+      ids: string[];
+      ownerId?: string;
+      model: string;
+    }
   | {
       action: "inspect";
       id: string;
@@ -38,6 +45,9 @@ export type SubscriptionAccountCommand =
       ownerId?: string;
       /** Caller/channel-scoped identity; binds subsequent requests to one account. */
       sessionId?: string;
+      model?: string;
+      /** Accounts already attempted by this request, still within ids/ownerId authorization. */
+      excludeIds?: string[];
     }
   | { action: "refresh"; leaseId: string; version: number }
   | {
@@ -47,5 +57,7 @@ export type SubscriptionAccountCommand =
       status: number;
       retryAfter?: string | null;
       quota?: SubscriptionQuota[];
+      quotaExhausted?: boolean;
+      resetAt?: number;
     }
   | { action: "release"; leaseId: string };
