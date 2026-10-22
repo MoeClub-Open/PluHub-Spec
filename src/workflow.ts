@@ -71,6 +71,8 @@ export interface ChannelWorkflow {
   name?: string;
   entry: string;
   nodes: WorkflowNode[];
+  /** Editor positions only; execution ignores this metadata. */
+  layout?: Record<string, { x: number; y: number }>;
 }
 export interface WorkflowResult {
   request: AIRequest;
