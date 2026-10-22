@@ -13,7 +13,9 @@ export interface SubscriptionLease {
   credential: SubscriptionCredential;
 }
 export interface SubscriptionQuota {
-  window: "primary" | "secondary";
+  window: string;
+  label?: string;
+  updatedAt?: number;
   usedPercent: number;
   resetAt?: number;
   windowMinutes?: number;

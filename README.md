@@ -19,6 +19,8 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 
 `/analytics` 定义用户公开目录、内部聚合查询及脱敏后的排行榜响应。排行榜只返回汇总用量，不包含用户内部 ID、邮箱、凭证或请求明细。
 
+`/subscription` 的 `SubscriptionQuota` 支持提供商自有的周期标识、可选展示名称与更新时间，兼容既有 `primary`、`secondary` 周期，用于展示模型或功能专属的订阅额度。
+
 `SiteBranding` 定义 `site.branding@1` 的站点名称、默认语言与主题色；不包含管理配置。`/security` 的 `MailMessage` 支持可选 HTML 正文，同时保留必填纯文本正文，兼容既有 `mail.send@1` 调用。
 
 `/security` 的 `CaptchaOptions` 通过可选 `provider` 区分 Turnstile、reCAPTCHA 和极验 v4，省略时兼容旧 Turnstile 提供商。reCAPTCHA 可声明 v2/v3 版本和官方服务域名。`AuthenticationOptions.captchaProvider` 提供通用前端配置，旧 `turnstile` 字段仅用于 Turnstile；`CaptchaVerification.token` 为提供商令牌或极验 v4 验证结果的 JSON 字符串。
