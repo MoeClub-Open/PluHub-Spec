@@ -66,7 +66,7 @@ export interface ModelMetrics {
   successes: number;
   avgLatencyMs?: number;
   avgFirstTokenMs?: number;
-  /** Total output tokens / total generation seconds across measured streams. */
+  /** Visible output tokens (excluding reasoning) / measured content stream seconds. */
   outputTps?: number;
   streamSamples: number;
   /** Fraction of cache-reporting requests with at least one cached input token. */
