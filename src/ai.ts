@@ -255,7 +255,7 @@ export interface RoutingRequest {
   credentialId?: string;
   /** Explicit channel, or the sole member of an API key binding. */
   channelId?: string;
-  /** Trusted API key channel allowlist. Empty/absent retains platform default routing. */
+  /** ai.routing@2: trusted API key channel allowlist; empty/absent retains platform default routing. */
   channelIds?: readonly string[];
   /** Only virtual task-aware providers consume the request content. */
   request?: AIRequest;
