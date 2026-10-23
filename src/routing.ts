@@ -1,4 +1,9 @@
-import type { AIRequest, ReasoningEffort, Protocol, PricingContext } from "./ai.js";
+import type {
+  AIRequest,
+  ReasoningEffort,
+  Protocol,
+  PricingContext,
+} from "./ai.js";
 import type { WorkflowResult } from "./workflow.js";
 export type RoutingMode = "model" | "effort" | "both" | "manual";
 export type Difficulty = "easy" | "standard" | "hard" | "expert";
@@ -41,5 +46,4 @@ export interface AutoRoutingInput {
   protocolPolicy?: WorkflowResult["protocolPolicy"];
   request: AIRequest;
   principalId?: string;
-  credentialId?: string;
 }

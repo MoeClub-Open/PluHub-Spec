@@ -50,6 +50,8 @@ export interface WebSearch {
   options: Record<string, unknown>;
   choice?: string;
   includeSources?: boolean;
+  /** Responses limit shared across provider-hosted tool calls. */
+  maxCalls?: number;
 }
 export interface WebSearchCall {
   type: "web_search_call";
@@ -66,6 +68,8 @@ export interface UrlCitation {
 }
 export interface AIRequest {
   model: string;
+  /** Non-conversational OpenAI-compatible operation. Never inferred from a model name. */
+  operation?: MediaOperation;
   /** Internal caller-scoped affinity identity, assigned by the trusted ingress. */
   sessionId?: string;
   messages: Message[];
@@ -111,6 +115,24 @@ export interface Usage {
   cacheWrite1h?: number;
   /** Subset of output; already included in output for billing. */
   reasoning?: number;
+  /** Completed provider-hosted searches, charged separately from tokens when configured. */
+  webSearch?: number;
+}
+export type MediaKind =
+  | "embeddings"
+  | "images/generations"
+  | "images/edits"
+  | "audio/speech"
+  | "audio/transcriptions"
+  | "audio/translations";
+export interface MediaOperation {
+  kind: MediaKind;
+  input: Record<string, unknown>;
+  /** Ordered multipart entries, preserving repeated fields and original filenames. */
+  parts?: {
+    name: string;
+    value: string | { filename: string; contentType: string; data: Uint8Array };
+  }[];
 }
 /** USD per million tokens. Cache rates default to the ordinary input rate. */
 export interface TokenPrices {
@@ -126,6 +148,8 @@ export interface ModelPricing {
   expression?: string;
   /** USD per completed request, independent of token usage. */
   request?: number;
+  /** USD per completed web search, additional to the selected pricing mode. */
+  webSearch?: number;
   cacheRead?: number;
   cacheWrite?: number;
   cacheWrite1h?: number;
@@ -145,6 +169,11 @@ export interface PricingContext {
   headers: Record<string, PricingScalar>;
 }
 export type AIEvent =
+  | {
+      type: "media";
+      contentType: string;
+      body: Uint8Array | Record<string, unknown>;
+    }
   | { type: "text"; text: string }
   | ({ type: "reasoning"; index: number } & ReasoningContent)
   | { type: "refusal"; text: string }
@@ -180,6 +209,8 @@ export interface AIResult {
   reason: FinishReason;
 }
 export interface UpstreamHttpSettings {
+  /** Operation-specific paths; independent from conversational endpoint paths. */
+  mediaPaths?: Partial<Record<MediaKind, string>>;
   /** Relative to Base URL; {model} is URL encoded. Defaults to the protocol endpoint. */
   path?: string;
   streamPath?: string;
@@ -239,6 +270,8 @@ export type ProviderConnection = Omit<Upstream, "flow" | "protocol"> & {
 export interface ModelRoute {
   upstream: string;
   model: string;
+  /** Omitted means conversational generation only. */
+  operations?: ("chat" | MediaKind)[];
   enabled?: boolean;
   name?: string;
   provider?: string;
@@ -311,6 +344,7 @@ export interface CatalogModel {
   channelId?: string;
   metrics?: import("./analytics.js").ModelMetrics;
   features: readonly string[];
+  operations?: ("chat" | MediaKind)[];
 }
 
 export interface RoutingRequest {
@@ -319,7 +353,6 @@ export interface RoutingRequest {
   ingressProtocol?: Protocol;
   features: readonly ("text" | "tools" | "stream" | "usage")[];
   principalId?: string;
-  credentialId?: string;
   /** Explicit channel, or the sole member of an API key binding. */
   channelId?: string;
   /** ai.routing@2: trusted API key channel allowlist; empty/absent retains platform default routing. */
