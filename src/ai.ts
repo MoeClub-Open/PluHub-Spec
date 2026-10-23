@@ -240,6 +240,7 @@ export interface Upstream {
     | "codex"
     | "claude-subscription"
     | "antigravity"
+    | "grok"
     | "auto-router"
     | "workflow"; // Legacy read compatibility only; new channels use flow.
   /** Per-channel request graph; omitted means start -> provider. */
@@ -265,7 +266,7 @@ export interface Upstream {
 }
 /** A provider connection is a graph node setting, never a channel type. */
 export type ProviderConnection = Omit<Upstream, "flow" | "protocol"> & {
-  protocol: Protocol | "codex" | "claude-subscription" | "antigravity";
+  protocol: Protocol | "codex" | "claude-subscription" | "antigravity" | "grok";
 };
 export interface ModelRoute {
   upstream: string;

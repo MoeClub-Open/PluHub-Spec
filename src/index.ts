@@ -1,5 +1,5 @@
 export const PROTOCOL_VERSION = 1;
-export const HOST_VERSION = "0.1.0-alpha.13";
+export const HOST_VERSION = "0.1.0-alpha.14";
 /** Public presentation metadata returned by site.branding@1. */
 export interface SiteBranding {
   name: string;

@@ -1,11 +1,12 @@
 /** Platform credentials are distinct from user-owned BYOK credentials. */
 export type SubscriptionProvider =
-  "codex" | "claude-subscription" | "antigravity";
+  "codex" | "claude-subscription" | "antigravity" | "grok";
 export interface SubscriptionCredential {
   secret: string;
   accountId?: string;
   projectId?: string;
   version: number;
+  authMode?: "siwc";
 }
 export interface SubscriptionLease {
   leaseId: string;
@@ -20,26 +21,28 @@ export interface SubscriptionQuota {
   resetAt?: number;
   windowMinutes?: number;
 }
-/** ai.subscription-accounts@1: acquire, refresh, report and release.
+/** ai.subscription.<provider>@1: inspect, discover models, acquire, refresh, report and release.
  * Never send returned credentials to the client or use them as a user identity.
  * Release every acquired lease. Failover may acquire another account before response delivery.
  */
 export type SubscriptionAccountCommand =
   | {
       action: "availability";
+      authMode?: "cli" | "siwc";
       provider?: SubscriptionProvider;
       ids: string[];
       ownerId?: string;
       model: string;
     }
   | {
-      action: "inspect";
+      action: "inspect" | "models";
       id: string;
       ownerId?: string;
       provider?: SubscriptionProvider;
     }
   | {
       action: "acquire";
+      authMode?: "cli" | "siwc";
       provider: SubscriptionProvider;
       ids: string[];
       ownerId?: string;

@@ -31,6 +31,7 @@ export interface PaymentProviderStatus {
   enabled: boolean;
   /** Omitted by legacy adapters that expose a single checkout option. */
   methods?: PaymentMethod[];
+  customerPortal?: boolean;
 }
 export interface PaymentEvent {
   provider: "stripe" | "epay";
@@ -40,9 +41,19 @@ export interface PaymentEvent {
   paymentMethod?: string;
   amount: number;
   currency: string;
-  kind: "paid" | "renewed" | "cancelled" | "past_due" | "cancel_scheduled";
+  kind:
+    | "paid"
+    | "renewed"
+    | "cancelled"
+    | "past_due"
+    | "cancel_scheduled"
+    | "active"
+    | "failed"
+    | "expired";
   subscriptionId?: string;
   periodEnd?: number;
+  subscriptionStatus?: string;
+  observedAt?: number;
 }
 /** Verified current provider state; contains no card, customer or dispute evidence data. */
 export interface PaymentAdjustment {
