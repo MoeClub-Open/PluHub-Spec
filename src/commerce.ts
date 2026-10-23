@@ -102,3 +102,13 @@ export interface RequestCharge {
   held: number;
   receipt?: Record<string, unknown>;
 }
+
+/** Aggregated ledger facts for a caller-scoped set of request identities. */
+export interface RequestChargeTotals {
+  /** Requests with a posted charge or an explicitly released reservation. */
+  knownRequests: number;
+  pendingRequests: number;
+  /** Sum of posted charges, in USD micro-units; excludes pending reservations. */
+  charged: number;
+  held: number;
+}

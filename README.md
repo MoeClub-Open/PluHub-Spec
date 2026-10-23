@@ -53,4 +53,6 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 
 `payments.provider@1` 使用 `/commerce` 的 `PaymentProviderStatus` 声明稳定 ID、名称、支付方式、币种、模式及续订/门户能力；Commerce 枚举并按选定插件调用。原提供商品牌专用能力已移除。`billing.request-charges@1` 接收 `{ requests: [{ id, userId }] }`（最多 500 个），返回 `RequestCharge[]`；未找到的记录不返回，不能解释成免费。
 
+`billing.request-totals@1` 接收同样的请求身份集合（最多 5000 个，重复身份只计算一次），返回 `RequestChargeTotals`：已扣费或明确释放的请求数、待结算请求数、实际扣费及预留金额。金额单位为微美元，未找到的请求不计入已知或待结算数。观测插件按授权范围提供请求身份，计费插件只返回账本事实，不依赖日志存储。
+
 `ModelDefinition` 包含模型展示、能力与原价，`ModelRoute` 在其上增加渠道映射和启停状态。平台和个人渠道共用定义与价格校验，渠道倍率独立保留。旧工作流插件由离线迁移转换为渠道节点，不再暴露 `ai.workflow@1` 或 `ai.converter@1`。
