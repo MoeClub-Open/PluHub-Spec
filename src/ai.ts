@@ -41,6 +41,28 @@ export interface Message {
   callId?: string;
   toolName?: string;
   toolError?: boolean;
+  citations?: UrlCitation[];
+  searchCalls?: WebSearchCall[];
+}
+export interface WebSearch {
+  type: "web_search" | "web_search_preview" | "web_search_preview_2025_03_11";
+  /** Native Responses options; conversion must reject controls it cannot represent. */
+  options: Record<string, unknown>;
+  choice?: string;
+  includeSources?: boolean;
+}
+export interface WebSearchCall {
+  type: "web_search_call";
+  id: string;
+  status?: string;
+  action?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+export interface UrlCitation {
+  url: string;
+  title: string;
+  startIndex: number;
+  endIndex: number;
 }
 export interface AIRequest {
   model: string;
@@ -49,6 +71,7 @@ export interface AIRequest {
   messages: Message[];
   stream: boolean;
   tools: Tool[];
+  webSearch?: WebSearch;
   maxTokens?: number;
   temperature?: number;
   reasoning?: Reasoning;
@@ -135,6 +158,12 @@ export type AIEvent =
       done?: boolean;
     }
   | { type: "usage"; usage: Usage }
+  | {
+      type: "search";
+      call: WebSearchCall;
+      phase?: "in_progress" | "searching" | "completed";
+    }
+  | { type: "citation"; citation: UrlCitation }
   | { type: "finish"; reason: FinishReason; stopSequence?: string };
 export type FinishReason = "stop" | "length" | "tool_calls" | "content_filter";
 export interface AIResult {
@@ -142,6 +171,8 @@ export interface AIResult {
   model: string;
   text: string;
   calls: ToolCall[];
+  searchCalls?: WebSearchCall[];
+  citations?: UrlCitation[];
   reasoning?: ReasoningContent[];
   refusal?: string;
   stopSequence?: string;
