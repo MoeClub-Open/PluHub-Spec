@@ -253,8 +253,10 @@ export interface RoutingRequest {
   features: readonly ("text" | "tools" | "stream" | "usage")[];
   principalId?: string;
   credentialId?: string;
-  /** Immutable API key binding, or an explicitly selected console channel. */
+  /** Explicit channel, or the sole member of an API key binding. */
   channelId?: string;
+  /** Trusted API key channel allowlist. Empty/absent retains platform default routing. */
+  channelIds?: readonly string[];
   /** Only virtual task-aware providers consume the request content. */
   request?: AIRequest;
 }
