@@ -236,6 +236,9 @@ export interface CatalogModel {
   outputPrice?: number;
   pricing?: ModelPricing;
   consumptionMultiplier?: number;
+  /** Internal catalog association; omit from public HTTP responses. */
+  channelId?: string;
+  metrics?: import("./analytics.js").ModelMetrics;
   features: readonly string[];
 }
 
