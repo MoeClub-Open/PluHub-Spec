@@ -233,7 +233,7 @@ export interface UpstreamInterface extends UpstreamHttpSettings {
   models?: string[];
 }
 export interface Upstream {
-  /** @deprecated Provider settings belong to flow provider nodes. Read compatibility only. */
+  /** Connection settings are used by provider nodes and owner-scoped channels. */
   /** Omit for channels whose graph delegates every branch to other models. */
   protocol?:
     | Protocol
@@ -241,8 +241,7 @@ export interface Upstream {
     | "claude-subscription"
     | "antigravity"
     | "grok"
-    | "auto-router"
-    | "workflow"; // Legacy read compatibility only; new channels use flow.
+    | "auto-router";
   /** Per-channel request graph; omitted means start -> provider. */
   flow?: import("./workflow.js").ChannelWorkflow;
   baseUrl?: string;
@@ -268,23 +267,26 @@ export interface Upstream {
 export type ProviderConnection = Omit<Upstream, "flow" | "protocol"> & {
   protocol: Protocol | "codex" | "claude-subscription" | "antigravity" | "grok";
 };
-export interface ModelRoute {
-  upstream: string;
-  model: string;
-  /** Omitted means conversational generation only. */
-  operations?: ("chat" | MediaKind)[];
-  enabled?: boolean;
+/** Model identity, capabilities and original prices, independent of channel ownership. */
+export interface ModelDefinition {
   name?: string;
   provider?: string;
   description?: string;
   contextWindow?: number;
+  operations?: ("chat" | MediaKind)[];
+  reasoningEfforts?: ReasoningEffort[];
   inputPrice?: number;
   outputPrice?: number;
   pricing?: ModelPricing;
-  /** Channel consumption prices, distinct from the original model catalog price. */
+}
+/** A channel's public alias maps to this upstream model and its original definition. */
+export interface ModelRoute extends ModelDefinition {
+  upstream: string;
+  model: string;
+  enabled?: boolean;
+  /** Personal channel consumption prices, distinct from original model prices. */
   effectiveInputPrice?: number;
   effectiveOutputPrice?: number;
-  reasoningEfforts?: ReasoningEffort[];
 }
 
 export interface AIPlan {

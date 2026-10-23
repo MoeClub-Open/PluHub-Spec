@@ -23,18 +23,25 @@ export interface PaymentCheckout {
   paymentMethod?: string;
 }
 export interface PaymentMethod {
-  id: string;
+  id?: string;
   name: string;
   type?: string;
 }
 export interface PaymentProviderStatus {
+  /** Stable business identifier, persisted with orders. */
+  id: string;
+  name: string;
   enabled: boolean;
-  /** Omitted by legacy adapters that expose a single checkout option. */
-  methods?: PaymentMethod[];
+  methods: PaymentMethod[];
+  currencies: string[] | "*";
+  modes: Product["mode"][];
+  renewal: "automatic" | "manual";
+  cancelSubscription?: boolean;
   customerPortal?: boolean;
+  recheckAdjustments?: boolean;
 }
 export interface PaymentEvent {
-  provider: "stripe" | "epay";
+  provider: string;
   eventId: string;
   orderId: string;
   paymentId: string;
@@ -57,7 +64,7 @@ export interface PaymentEvent {
 }
 /** Verified current provider state; contains no card, customer or dispute evidence data. */
 export interface PaymentAdjustment {
-  provider: "stripe" | "epay";
+  provider: string;
   eventId: string;
   objectId: string;
   references: string[];
@@ -83,4 +90,15 @@ export interface PaymentBalanceState {
   debit: number;
   hold: number;
   revision: number;
+}
+
+/** Financial facts from the billing ledger, independent of request log retention. */
+export interface RequestCharge {
+  requestId: string;
+  userId: string;
+  status: "reserved" | "review" | "released" | "settled";
+  /** USD micro-units; null until the request is settled or released. */
+  charged: number | null;
+  held: number;
+  receipt?: Record<string, unknown>;
 }

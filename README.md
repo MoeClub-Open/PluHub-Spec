@@ -2,12 +2,12 @@
 
 公开契约：schemas/manifest.schema.json、schemas/host-config.schema.json、src/index.ts、独立可选的 src/ai.ts。
 
-~~~sh
+```sh
 pnpm install --frozen-lockfile
 pnpm build
 pnpm test
 pnpm check:compat
-~~~
+```
 
 发布包 @pluhub/contracts。Schema、TS 类型与共享样例随同一个版本发布。compat/v1 是 Manifest v1 基线；同一主版本不得删除属性、收紧类型或添加必填字段。
 
@@ -39,12 +39,18 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 
 宿主依次调用 plugin.initialize、plugin.health。初始化结果返回 protocolVersion: 1 与声明一致的能力列表。capability.invoke 接收 capability、input、config 与 contextId，其中 config 是当前调用的插件配置快照。$/cancelRequest 携带调用 id；调用有超时。排空和停止使用 plugin.drain、plugin.stop。
 
-插件可反向调用 host.call、host.secret、host.log。控制通道不传输逐 Chunk 数据。进程外执行本身不等于沙箱。
+插件可反向调用 host.call、host.providers、host.secret、host.log。控制通道不传输逐 Chunk 数据。进程外执行本身不等于沙箱。
 
 请求内的 host.call、host.secret 应携带原 capability.invoke 的 contextId，宿主恢复该请求的配置及能力绑定快照，并传递取消信号。调用完成后不得继续复用 contextId；未知或过期的标识会被拒绝。Go SDK 自动传递 Handler Context 中的标识。
 
 生命周期：Discovered → Validated → Installed → Resolved → Starting → Ready → Active → Draining → Stopped，另有 Failed 状态。
 
-请求阶段：Ingress、Identity、Planning、Admission、Execution、Streaming、Finalize。Finalize 在取消后仍执行。依赖图与执行图独立；请求绑定配置快照。
+请求阶段：Ingress、Identity、Planning、Admission、Execution、Streaming、Finalize。Finalize 在取消后仍执行；每个 Hook 均会执行，结束后汇总报告错误。依赖图与执行图独立；请求绑定配置快照。
 
 许可证：Apache-2.0。
+
+宿主 `0.1.0-alpha.15` 起支持 `Host.providers(capability)` 和 `Host.call(capability, input, signal, providerId)`。显式提供商必须存在于该请求绑定的活动快照且声明该能力；调用方仍须声明依赖。未指定提供商时维持唯一实现/显式绑定规则。进程 RPC `host.providers` 接收 `capability` 和 `contextId`，`host.call` 增加可选 `providerId`。这些接口不暴露插件内部对象。`http.dispatch` 授权允许 Native 插件通过标准 Request 调用宿主 API，目标路由仍执行身份及权限检查。
+
+`payments.provider@1` 使用 `/commerce` 的 `PaymentProviderStatus` 声明稳定 ID、名称、支付方式、币种、模式及续订/门户能力；Commerce 枚举并按选定插件调用。原提供商品牌专用能力已移除。`billing.request-charges@1` 接收 `{ requests: [{ id, userId }] }`（最多 500 个），返回 `RequestCharge[]`；未找到的记录不返回，不能解释成免费。
+
+`ModelDefinition` 包含模型展示、能力与原价，`ModelRoute` 在其上增加渠道映射和启停状态。平台和个人渠道共用定义与价格校验，渠道倍率独立保留。旧工作流插件由离线迁移转换为渠道节点，不再暴露 `ai.workflow@1` 或 `ai.converter@1`。
