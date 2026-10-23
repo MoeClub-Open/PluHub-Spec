@@ -236,6 +236,10 @@ export interface CatalogModel {
   outputPrice?: number;
   pricing?: ModelPricing;
   consumptionMultiplier?: number;
+  /** Public channel identity, without provider connection or credential details. */
+  channel?: { id: string; name: string; scope: "platform" | "personal" };
+  /** Channel billing rates before the consumption multiplier is applied. */
+  billing?: RequestPricing;
   /** Internal catalog association; omit from public HTTP responses. */
   channelId?: string;
   metrics?: import("./analytics.js").ModelMetrics;
