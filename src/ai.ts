@@ -249,7 +249,10 @@ export interface Upstream {
   interfaces?: UpstreamInterface[];
   /** Resolved HTTP settings for execution, never copied from the client. */
   http?: UpstreamHttpSettings;
-  keyRef?: string;
+  /** One environment reference or a rotating pool of references. */
+  keyRef?: string | string[];
+  /** Higher values are selected first among channels exposing the same public model. */
+  priority?: number;
   name?: string;
   enabled?: boolean;
   credentialId?: string;
@@ -281,6 +284,8 @@ export interface ModelDefinition {
 }
 /** A channel's public alias maps to this upstream model and its original definition. */
 export interface ModelRoute extends ModelDefinition {
+  /** Shared client-facing name; the configuration map key remains a stable route ID. */
+  publicModel?: string;
   upstream: string;
   model: string;
   enabled?: boolean;
@@ -330,6 +335,9 @@ export interface ModelRedirect {
 }
 
 export interface CatalogModel {
+  /** Internal route identity and scheduling metadata; omit from public HTTP responses. */
+  routeId?: string;
+  channelPriority?: number;
   id: string;
   name: string;
   provider: string;
