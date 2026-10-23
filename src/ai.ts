@@ -148,6 +148,28 @@ export interface AIResult {
   usage: Usage;
   reason: FinishReason;
 }
+export interface UpstreamHttpSettings {
+  /** Relative to Base URL; {model} is URL encoded. Defaults to the protocol endpoint. */
+  path?: string;
+  streamPath?: string;
+  /** Optional model directory endpoint, relative to Base URL. */
+  modelsPath?: string;
+  /** Server-configured headers; {key} refers to this connection's credential. */
+  headers?: Record<string, string>;
+  /** Provider extension parameters; routing, output budgets and usage collection stay authoritative. */
+  params?: Record<string, unknown>;
+  auth?: {
+    type: "default" | "none" | "bearer" | "header" | "query";
+    name?: string;
+  };
+}
+export interface UpstreamInterface extends UpstreamHttpSettings {
+  /** Ordered matching by trusted ingress protocol and mapped upstream model. */
+  incoming: Protocol[];
+  protocol: Protocol;
+  /** Exact names or * wildcards; omitted means every mapped model. */
+  models?: string[];
+}
 export interface Upstream {
   /** @deprecated Provider settings belong to flow provider nodes. Read compatibility only. */
   /** Omit for channels whose graph delegates every branch to other models. */
@@ -161,6 +183,10 @@ export interface Upstream {
   /** Per-channel request graph; omitted means start -> provider. */
   flow?: import("./workflow.js").ChannelWorkflow;
   baseUrl?: string;
+  /** Optional exhaustive interface routes on this connection. First match wins. */
+  interfaces?: UpstreamInterface[];
+  /** Resolved HTTP settings for execution, never copied from the client. */
+  http?: UpstreamHttpSettings;
   keyRef?: string;
   name?: string;
   enabled?: boolean;
