@@ -98,7 +98,9 @@ export interface TokenPrices {
   cacheWrite1h?: number;
 }
 export interface ModelPricing {
-  mode?: "tokens" | "request";
+  mode?: "tokens" | "request" | "expression";
+  /** Tier-selected arithmetic; token coefficients are USD / 1M, fixed() is USD / request. */
+  expression?: string;
   /** USD per completed request, independent of token usage. */
   request?: number;
   cacheRead?: number;
@@ -110,6 +112,14 @@ export interface ModelPricing {
 export interface RequestPricing extends TokenPrices, ModelPricing {
   /** Consumption multiplier; original prices remain unchanged. */
   multiplier?: number;
+  /** Frozen request facts used by expression reservation, settlement and audit. */
+  context?: PricingContext;
+}
+export type PricingScalar = string | number | boolean | null;
+export interface PricingContext {
+  at: number;
+  params: Record<string, PricingScalar>;
+  headers: Record<string, PricingScalar>;
 }
 export type AIEvent =
   | { type: "text"; text: string }
@@ -257,6 +267,8 @@ export interface RoutingRequest {
   channelId?: string;
   /** ai.routing@2: trusted API key channel allowlist; empty/absent retains platform default routing. */
   channelIds?: readonly string[];
+  /** Trusted ingress scalar request facts; the final pricing snapshot retains only referenced keys. */
+  pricingContext?: PricingContext;
   /** Only virtual task-aware providers consume the request content. */
   request?: AIRequest;
 }
