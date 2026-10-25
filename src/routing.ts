@@ -46,4 +46,6 @@ export interface AutoRoutingInput {
   protocolPolicy?: WorkflowResult["protocolPolicy"];
   request: AIRequest;
   principalId?: string;
+  groupId?: string;
+  allowedChannelIds?: readonly string[];
 }
