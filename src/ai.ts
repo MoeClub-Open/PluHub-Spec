@@ -122,6 +122,7 @@ export type MediaKind =
   | "embeddings"
   | "images/generations"
   | "images/edits"
+  | "videos/generations"
   | "audio/speech"
   | "audio/transcriptions"
   | "audio/translations";

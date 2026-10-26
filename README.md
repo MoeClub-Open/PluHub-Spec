@@ -51,6 +51,8 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 
 许可证：Apache-2.0。
 
+`MediaKind` 包含 `videos/generations`，用于一次执行内等待视频任务完成，和上游原生异步任务 API 区分。媒体操作继续通过 `AIRequest.operation`、`AIEvent.media` 与原有路由、权限和资金阶段协作。Codex 订阅可提供 `ai.media.codex@1`，将图片操作转换为提供商图片工具，不新增独立账本或媒体业务插件。
+
 宿主 `0.1.0-alpha.15` 起支持 `Host.providers(capability)` 和 `Host.call(capability, input, signal, providerId)`。显式提供商必须存在于该请求绑定的活动快照且声明该能力；调用方仍须声明依赖。未指定提供商时维持唯一实现/显式绑定规则。进程 RPC `host.providers` 接收 `capability` 和 `contextId`，`host.call` 增加可选 `providerId`。这些接口不暴露插件内部对象。`http.dispatch` 授权允许 Native 插件通过标准 Request 调用宿主 API，目标路由仍执行身份及权限检查。
 
 `payments.provider@1` 使用 `/commerce` 的 `PaymentProviderStatus` 声明稳定 ID、名称、支付方式、币种、模式及续订/门户能力；Commerce 枚举并按选定插件调用。原提供商品牌专用能力已移除。`billing.request-charges@1` 接收 `{ requests: [{ id, userId }] }`（最多 500 个），返回 `RequestCharge[]`；未找到的记录不返回，不能解释成免费。
