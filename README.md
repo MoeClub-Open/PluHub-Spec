@@ -21,9 +21,11 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 
 `observability.model-metrics@1` 按目录指定的平台模型与渠道聚合近 24 小时数据，排除个人渠道。延迟只统计成功请求，首 Token 延迟与输出 TPS 只统计流式请求；TPS 使用排除思考 Token 后的可见输出 Token 除以首末输出内容事件间的总秒数，单块响应不计入。缓存命中率以明确报告缓存读取用量的成功请求为分母，未知用量不当作未命中。公开目录提供渠道 ID、名称、倍率、计费价格和汇总指标，不提供连接配置、上游地址或凭证。模型原价与渠道计费价格分别保留，试算使用渠道计费价格与消耗倍率。
 
-`ai.routing@2` 与 `ai.catalog@2` 使用多渠道授权范围；官方实现不再提供旧的 `@1` 能力。`RoutingRequest.channelIds` 是入口从 API Key 身份读取的渠道授权范围；空列表或省略时保留平台默认路由。`channelId` 为显式选择或唯一绑定渠道，必须属于非空的授权范围。未指定渠道时按模型匹配可用绑定，平台优先，个人渠道按绑定顺序匹配且仅可读取拥有者自己的配置；定价和倍率使用实际匹配的渠道。`x-pluhub-channel` 可在授权范围内选择渠道，客户端请求体不能覆盖该范围。模型目录、价格试算和请求路由使用相同范围；标准 `/v1/models` 对重复模型 ID 保留默认匹配项。
+`ai.routing@2` 与 `ai.catalog@2` 共用授权范围。平台密钥使用 `groupId`，由 Router 校验分组启停、用户和目标渠道；个人密钥使用 `channelIds`，只能读取拥有者的个人渠道。`channelId` 是当前范围内的显式选择，`x-pluhub-channel` 不能扩大范围，客户端请求体不能覆盖可信授权。未指定分组的登录会话使用默认分组。旧平台渠道绑定通过离线迁移改为受限分组，不作为另一种业务模式延续。标准 `/v1/models` 对重复模型 ID 保留默认匹配项。
 
-`ModelPricing.mode: "expression"` 以 `expression` 定义价格，不能混入 `request`、`tiers` 或独立缓存价格表。表达式的 Token 系数为 USD / 百万 Token，`fixed()` 为 USD / 次；渠道消耗倍率在表达式金额之后应用。`PricingContext` 固定请求开始时间和所需标量参数、请求头，随路由、预留及结算传递。时间、参数和请求头不在结算时重新读取；最终快照仅保留表达式引用的标量事实，不保留提示词或认证凭证。计费档位、表达式、归一化用量与上下文随账本和调用日志保存。
+`RoutingRequest.purpose: "quote"` 解析最终价格而不调用生成接口、远程决策器或凭证租约；条件图没有请求内容时返回 `quote_request_required`，自动路由尚未确定目标时返回 `quote_route_required`。普通执行、自动路由候选及试算共用路径解析、分组与协议检查。`AutoRoutingInput.consumptionMultiplier` 携带入口渠道倍率，使候选价格与最终计费一致；分组倍率在此基础上应用。输出节拍统一使用 `ai.output-pace@2`，自动选型仅使用 `ai.auto-routing@1`，旧能力绑定由离线迁移移除或更新。
+
+`ModelPricing.mode: "expression"` 以 `expression` 定义价格，不能混入 `request`、`tiers` 或独立缓存价格表。表达式的 Token 系数为 USD / 百万 Token，`fixed()` 为 USD / 次；渠道与使用分组倍率在表达式金额之后应用。`PricingContext` 固定请求开始时间和所需标量参数、请求头，随路由、预留及结算传递。时间、参数和请求头不在结算时重新读取；最终快照仅保留表达式引用的标量事实，不保留提示词或认证凭证。计费档位、表达式、归一化用量与上下文随账本和调用日志保存。
 
 `/subscription` 的 `SubscriptionQuota` 支持提供商自有的周期标识、可选展示名称与更新时间，兼容既有 `primary`、`secondary` 周期，用于展示模型或功能专属的订阅额度。
 

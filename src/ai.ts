@@ -372,6 +372,8 @@ export interface CatalogModel {
 }
 
 export interface RoutingRequest {
+  /** Quotes resolve without provider calls, health acquisition or remote routing decisions. */
+  purpose?: "execution" | "quote";
   model: string;
   /** Set by the trusted ingress adapter, never read from the client's JSON body. */
   ingressProtocol?: Protocol;
