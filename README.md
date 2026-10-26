@@ -62,3 +62,5 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 `ModelDefinition` 包含模型展示、能力与原价，`ModelRoute` 在其上增加渠道映射和启停状态。平台和个人渠道共用定义与价格校验，渠道倍率独立保留。旧工作流插件由离线迁移转换为渠道节点，不再暴露 `ai.workflow@1` 或 `ai.converter@1`。
 
 `/workflow` 增加个人渠道专用的 `platform` 终点（`groupId`、可选 `model`）和 `provider.fallback` 错误边；图校验要求备用出口指向平台分组且不能形成环。`AIPlan.fallback` 是受信任的延后路由请求，`attempts` 记录切换前失败的目标。入口只能在首事件前明确拒绝时执行这条路线，并重新进行限流、分组授权和资金准入。`CatalogModel.reasoningEfforts` 用于呈现模型声明的思考强度；`RequestCharge.note` 提供账本结算说明，不由观测插件猜测结算状态。
+
+宿主 `0.1.0-alpha.16` 支持 `Host.secret` 读取 `secret:` 托管凭据；授权仍由 `secrets.read` 和插件配置的 `secretRefs` 共同决定。业务参数通过请求、能力调用参数或配置传递。
