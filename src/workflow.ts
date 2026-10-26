@@ -41,7 +41,9 @@ export type WorkflowNode =
   | {
       id: string;
       type: "condition";
-      test: "hasTools" | "stream" | "textLengthAbove" | "protocol";
+      test: "hasTools" | "stream" | "textLengthAbove" | "protocol" | "model";
+      models?: string[];
+      modelSource?: "requested" | "mapped";
       protocol?: Protocol;
       value?: number;
       yes: string;
