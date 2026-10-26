@@ -374,6 +374,8 @@ export interface CatalogModel {
 export interface RoutingRequest {
   /** Quotes resolve without provider calls, health acquisition or remote routing decisions. */
   purpose?: "execution" | "quote";
+  /** Quote endpoint when there is no decoded request; execution uses request.operation. */
+  operation?: "chat" | MediaKind;
   model: string;
   /** Set by the trusted ingress adapter, never read from the client's JSON body. */
   ingressProtocol?: Protocol;
@@ -383,7 +385,7 @@ export interface RoutingRequest {
   channelId?: string;
   /** ai.routing@2: trusted API key channel allowlist; empty/absent retains platform default routing. */
   channelIds?: readonly string[];
-  /** Trusted group binding; legacy channel-bound keys omit this field. */
+  /** Trusted platform service-group binding. Personal keys use channelIds instead. */
   groupId?: string;
   /** Trusted ingress scalar request facts; the final pricing snapshot retains only referenced keys. */
   pricingContext?: PricingContext;

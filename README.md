@@ -23,7 +23,7 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 
 `ai.routing@2` 与 `ai.catalog@2` 共用授权范围。平台密钥使用 `groupId`，由 Router 校验分组启停、用户和目标渠道；个人密钥使用 `channelIds`，只能读取拥有者的个人渠道。`channelId` 是当前范围内的显式选择，`x-pluhub-channel` 不能扩大范围，客户端请求体不能覆盖可信授权。未指定分组的登录会话使用默认分组。旧平台渠道绑定通过离线迁移改为受限分组，不作为另一种业务模式延续。标准 `/v1/models` 对重复模型 ID 保留默认匹配项。
 
-`RoutingRequest.purpose: "quote"` 解析最终价格而不调用生成接口、远程决策器或凭证租约；条件图没有请求内容时返回 `quote_request_required`，自动路由尚未确定目标时返回 `quote_route_required`。普通执行、自动路由候选及试算共用路径解析、分组与协议检查。`AutoRoutingInput.consumptionMultiplier` 携带入口渠道倍率，使候选价格与最终计费一致；分组倍率在此基础上应用。输出节拍统一使用 `ai.output-pace@2`，自动选型仅使用 `ai.auto-routing@1`，旧能力绑定由离线迁移移除或更新。
+`RoutingRequest.operation` 指定没有完整请求时的试算端点，实际执行仍从解码后的请求获取端点。`RoutingRequest.purpose: "quote"` 解析最终价格而不调用生成接口、远程决策器或凭证租约；条件图没有请求内容时返回 `quote_request_required`，自动路由尚未确定目标时返回 `quote_route_required`。普通执行、自动路由候选及试算共用路径解析、分组与协议检查。`AutoRoutingInput.consumptionMultiplier` 携带入口渠道倍率，使候选价格与最终计费一致；分组倍率在此基础上应用。输出节拍统一使用 `ai.output-pace@2`，自动选型仅使用 `ai.auto-routing@1`，旧能力绑定由离线迁移移除或更新。
 
 `ModelPricing.mode: "expression"` 以 `expression` 定义价格，不能混入 `request`、`tiers` 或独立缓存价格表。表达式的 Token 系数为 USD / 百万 Token，`fixed()` 为 USD / 次；渠道与使用分组倍率在表达式金额之后应用。`PricingContext` 固定请求开始时间和所需标量参数、请求头，随路由、预留及结算传递。时间、参数和请求头不在结算时重新读取；最终快照仅保留表达式引用的标量事实，不保留提示词或认证凭证。计费档位、表达式、归一化用量与上下文随账本和调用日志保存。
 
