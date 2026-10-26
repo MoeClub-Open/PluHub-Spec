@@ -297,6 +297,9 @@ export interface ModelRoute extends ModelDefinition {
 }
 
 export interface AIPlan {
+  /** Trusted personal-channel delegation, resolved only after a safe rejection. */
+  fallback?: RoutingRequest;
+  attempts?: { channel?: string; model: string; error: string }[];
   capability: string;
   upstream: Upstream;
   model: string;
@@ -347,6 +350,7 @@ export interface ServiceGroup {
 }
 
 export interface CatalogModel {
+  reasoningEfforts?: ReasoningEffort[];
   /** Internal route identity and scheduling metadata; omit from public HTTP responses. */
   routeId?: string;
   channelPriority?: number;
@@ -372,6 +376,7 @@ export interface CatalogModel {
 }
 
 export interface RoutingRequest {
+  protocolPolicy?: import("./workflow.js").WorkflowResult["protocolPolicy"];
   /** Quotes resolve without provider calls, health acquisition or remote routing decisions. */
   purpose?: "execution" | "quote";
   /** Quote endpoint when there is no decoded request; execution uses request.operation. */

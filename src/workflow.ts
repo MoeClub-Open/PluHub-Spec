@@ -33,7 +33,10 @@ export type WorkflowNode =
       type: "provider";
       upstream?: ProviderConnection;
       model?: string;
+      /** Optional error edge to a platform group terminal, before any output. */
+      fallback?: string;
     }
+  | { id: string; type: "platform"; groupId: string; model?: string }
   | { id: string; type: "routing"; profile: string }
   | {
       id: string;
@@ -80,6 +83,8 @@ export interface WorkflowResult {
   /** No redirect: continue with the owning channel's provider. */
   provider?: boolean;
   providerId?: string;
+  platformGroup?: { groupId: string; model?: string };
+  fallback?: { groupId: string; model?: string };
   routingProfile?: string;
   mode: "implicit" | "explicit";
   trace: { profile: string; nodes: string[] };

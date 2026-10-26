@@ -94,6 +94,7 @@ export interface PaymentBalanceState {
 
 /** Financial facts from the billing ledger, independent of request log retention. */
 export interface RequestCharge {
+  note?: string;
   requestId: string;
   userId: string;
   status: "reserved" | "review" | "released" | "settled";
