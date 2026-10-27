@@ -245,6 +245,9 @@ export interface Upstream {
     | "claude-subscription"
     | "antigravity"
     | "grok"
+    | "systemone"
+    | "luna"
+    | "jev"
     | "auto-router";
   /** Per-channel request graph; omitted means start -> provider. */
   flow?: import("./workflow.js").ChannelWorkflow;
@@ -272,7 +275,7 @@ export interface Upstream {
 }
 /** A provider connection is a graph node setting, never a channel type. */
 export type ProviderConnection = Omit<Upstream, "flow" | "protocol"> & {
-  protocol: Protocol | "codex" | "claude-subscription" | "antigravity" | "grok";
+  protocol: Protocol | "codex" | "claude-subscription" | "antigravity" | "grok" | "systemone" | "luna" | "jev";
 };
 /** Model identity, capabilities and original prices, independent of channel ownership. */
 export interface ModelDefinition {
@@ -299,6 +302,12 @@ export interface ModelRoute extends ModelDefinition {
 }
 
 export interface AIPlan {
+  /** Set only on a trusted provider child whose parent reserved this channel limit. */
+  workflowParentChannel?: string;
+  /** Execution is deferred until the enclosing request has passed admission. */
+  workflowDeferred?: { input: RoutingRequest; requestedModel: string };
+  /** A workflow can return computed text rather than invoke a final provider. */
+  workflowResponse?: { text: string };
   /** Record the model ID reported by the selected provider response. */
   recordResponseModel?: boolean;
   /** Trusted personal-channel delegation, resolved only after a safe rejection. */
@@ -380,6 +389,8 @@ export interface CatalogModel {
 }
 
 export interface RoutingRequest {
+  /** Assigned only by a trusted internal decision entry point. */
+  routeKind?: "systemone" | "luna" | "jev";
   protocolPolicy?: import("./workflow.js").WorkflowResult["protocolPolicy"];
   /** Quotes resolve without provider calls, health acquisition or remote routing decisions. */
   purpose?: "execution" | "quote";

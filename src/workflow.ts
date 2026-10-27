@@ -6,6 +6,8 @@ import type {
   Protocol,
   UpstreamInterface,
 } from "./ai.js";
+import type { WorkflowDataNode, WorkflowResponseNode } from "./workflow-data.js";
+export type { WorkflowDataNode, WorkflowResponseNode } from "./workflow-data.js";
 
 type Linear = { id: string; next: string };
 export type WorkflowValueType =
@@ -15,6 +17,7 @@ export type WorkflowValueType =
   | "boolean"
   | "string[]"
   | "object"
+  | "json"
   | "secret";
 export interface WorkflowBinding {
   source: string;
@@ -66,7 +69,8 @@ export type WorkflowNode =
         | boolean
         | string[]
         | Record<string, unknown>
-        | unknown[];
+        | unknown[]
+        | null;
       secretRef?: string | string[];
     }
   | {
@@ -80,6 +84,34 @@ export type WorkflowNode =
       yes: string;
       no: string;
     }
+  /** Branches consume a boolean; their condition can be shared or composed. */
+  | { id: string; type: "branch"; condition: boolean; yes: string; no: string }
+  | {
+      id: string;
+      type: "predicate";
+      test: "hasTools" | "stream" | "textLengthAbove" | "protocol" | "model";
+      models?: string[];
+      modelSource?: "requested" | "mapped";
+      protocol?: Protocol;
+      value?: number;
+    }
+  | {
+      id: string;
+      type: "compare";
+      valueType: "string" | "number" | "boolean";
+      operator: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "matches";
+      left: string | number | boolean;
+      right: string | number | boolean | string[];
+    }
+  | {
+      id: string;
+      type: "logic";
+      operator: "and" | "or" | "not";
+      left: boolean;
+      right?: boolean;
+    }
+  | WorkflowDataNode
+  | WorkflowResponseNode
   | (Linear & {
       type: "protocol";
       allow: Protocol[];
@@ -101,6 +133,8 @@ export type WorkflowNode =
       id: string;
       type: "upstream";
       target: string;
+      /** Required when the target is selected from request or model output. */
+      allowedTargets?: string[];
       mode: "implicit" | "explicit";
     };
 export interface ChannelWorkflow {
