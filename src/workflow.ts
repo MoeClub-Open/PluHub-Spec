@@ -46,6 +46,7 @@ export type WorkflowNode =
   | {
       id: string;
       type: "provider";
+      recordResponseModel?: boolean;
       upstream?: ProviderConnection;
       model?: string;
       /** Evaluated personal-channel interface settings; not persisted in provider nodes. */

@@ -172,6 +172,7 @@ export interface PricingContext {
   headers: Record<string, PricingScalar>;
 }
 export type AIEvent =
+  | { type: "upstream-model"; model: string }
   | {
       type: "media";
       contentType: string;
@@ -298,6 +299,8 @@ export interface ModelRoute extends ModelDefinition {
 }
 
 export interface AIPlan {
+  /** Record the model ID reported by the selected provider response. */
+  recordResponseModel?: boolean;
   /** Trusted personal-channel delegation, resolved only after a safe rejection. */
   fallback?: RoutingRequest;
   attempts?: { channel?: string; model: string; error: string }[];
