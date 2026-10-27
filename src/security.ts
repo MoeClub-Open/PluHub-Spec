@@ -2,7 +2,7 @@
 export interface CaptchaOptions {
   enabled: boolean;
   /** Omitted by legacy providers; defaults to Turnstile. */
-  provider?: "turnstile" | "recaptcha" | "geetest";
+  provider?: "turnstile" | "recaptcha" | "hcaptcha" | "geetest";
   siteKey?: string;
   recaptchaVersion?: "v2" | "v3";
   recaptchaDomain?: "www.google.com" | "www.recaptcha.net";
