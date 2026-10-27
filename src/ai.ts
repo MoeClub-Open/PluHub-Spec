@@ -383,6 +383,8 @@ export interface RoutingRequest {
   /** Quote endpoint when there is no decoded request; execution uses request.operation. */
   operation?: "chat" | MediaKind;
   model: string;
+  /** Original public model when the caller already selected a specific route ID. */
+  requestedModel?: string;
   /** Set by the trusted ingress adapter, never read from the client's JSON body. */
   ingressProtocol?: Protocol;
   features: readonly ("text" | "tools" | "stream" | "usage")[];

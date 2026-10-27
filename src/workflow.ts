@@ -4,9 +4,24 @@ import type {
   AIPlan,
   ProviderConnection,
   Protocol,
+  UpstreamInterface,
 } from "./ai.js";
 
 type Linear = { id: string; next: string };
+export type WorkflowValueType =
+  | "string"
+  | "number"
+  | "integer"
+  | "boolean"
+  | "string[]"
+  | "object"
+  | "secret";
+export interface WorkflowBinding {
+  source: string;
+  output: string;
+  target: string;
+  input: string;
+}
 export interface RequestLimitRule {
   rpm?: number;
   tpm?: number;
@@ -33,11 +48,26 @@ export type WorkflowNode =
       type: "provider";
       upstream?: ProviderConnection;
       model?: string;
+      /** Evaluated personal-channel interface settings; not persisted in provider nodes. */
+      interfaces?: UpstreamInterface[];
       /** Optional error edge to a platform group terminal, before any output. */
       fallback?: string;
     }
   | { id: string; type: "platform"; groupId: string; model?: string }
   | { id: string; type: "routing"; profile: string }
+  | {
+      id: string;
+      type: "value";
+      valueType: WorkflowValueType;
+      value?:
+        | string
+        | number
+        | boolean
+        | string[]
+        | Record<string, unknown>
+        | unknown[];
+      secretRef?: string | string[];
+    }
   | {
       id: string;
       type: "condition";
@@ -76,6 +106,8 @@ export interface ChannelWorkflow {
   name?: string;
   entry: string;
   nodes: WorkflowNode[];
+  /** Typed data connections, independent of the request execution path. */
+  bindings?: WorkflowBinding[];
   /** Editor positions only; execution ignores this metadata. */
   layout?: Record<string, { x: number; y: number }>;
 }
@@ -85,6 +117,7 @@ export interface WorkflowResult {
   /** No redirect: continue with the owning channel's provider. */
   provider?: boolean;
   providerId?: string;
+  providerNode?: Extract<WorkflowNode, { type: "provider" }>;
   platformGroup?: { groupId: string; model?: string };
   fallback?: { groupId: string; model?: string };
   routingProfile?: string;
