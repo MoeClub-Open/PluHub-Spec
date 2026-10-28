@@ -275,7 +275,15 @@ export interface Upstream {
 }
 /** A provider connection is a graph node setting, never a channel type. */
 export type ProviderConnection = Omit<Upstream, "flow" | "protocol"> & {
-  protocol: Protocol | "codex" | "claude-subscription" | "antigravity" | "grok" | "systemone" | "luna" | "jev";
+  protocol:
+    | Protocol
+    | "codex"
+    | "claude-subscription"
+    | "antigravity"
+    | "grok"
+    | "systemone"
+    | "luna"
+    | "jev";
 };
 /** Model identity, capabilities and original prices, independent of channel ownership. */
 export interface ModelDefinition {
@@ -301,20 +309,14 @@ export interface ModelRoute extends ModelDefinition {
   effectiveOutputPrice?: number;
 }
 
-export interface AIPlan {
+interface AIPlanBase {
   /** Set only on a trusted provider child whose parent reserved this channel limit. */
   workflowParentChannel?: string;
-  /** Execution is deferred until the enclosing request has passed admission. */
-  workflowDeferred?: { input: RoutingRequest; requestedModel: string };
-  /** A workflow can return computed text rather than invoke a final provider. */
-  workflowResponse?: { text: string };
   /** Record the model ID reported by the selected provider response. */
   recordResponseModel?: boolean;
   /** Trusted personal-channel delegation, resolved only after a safe rejection. */
   fallback?: RoutingRequest;
   attempts?: { channel?: string; model: string; error: string }[];
-  capability: string;
-  upstream: Upstream;
   model: string;
   upstreamId?: string;
   credentialId?: string;
@@ -345,6 +347,30 @@ export interface AIPlan {
     fallback?: string;
   };
 }
+
+export interface AIProviderPlan extends AIPlanBase {
+  kind: "provider";
+  capability: string;
+  upstream: Upstream;
+  workflowDeferred?: never;
+  workflowResponse?: never;
+}
+export interface AIWorkflowPlan extends AIPlanBase {
+  kind: "workflow";
+  workflowDeferred: { input: RoutingRequest; requestedModel: string };
+  capability?: never;
+  upstream?: never;
+  workflowResponse?: never;
+}
+export interface AIResponsePlan extends AIPlanBase {
+  kind: "response";
+  workflowResponse: { text: string };
+  capability?: never;
+  upstream?: never;
+  workflowDeferred?: never;
+}
+/** Routing yields an executable provider, an admitted workflow, or computed text. */
+export type AIPlan = AIProviderPlan | AIWorkflowPlan | AIResponsePlan;
 
 export interface ModelRedirect {
   target: string;

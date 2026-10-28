@@ -73,17 +73,6 @@ export type WorkflowNode =
         | null;
       secretRef?: string | string[];
     }
-  | {
-      id: string;
-      type: "condition";
-      test: "hasTools" | "stream" | "textLengthAbove" | "protocol" | "model";
-      models?: string[];
-      modelSource?: "requested" | "mapped";
-      protocol?: Protocol;
-      value?: number;
-      yes: string;
-      no: string;
-    }
   /** Branches consume a boolean; their condition can be shared or composed. */
   | { id: string; type: "branch"; condition: boolean; yes: string; no: string }
   | {

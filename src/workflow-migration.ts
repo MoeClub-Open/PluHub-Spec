@@ -1,9 +1,26 @@
 import type { ChannelWorkflow, WorkflowNode } from "./workflow.js";
 
+export type LegacyWorkflowCondition = {
+  id: string;
+  type: "condition";
+  test: "hasTools" | "stream" | "textLengthAbove" | "protocol" | "model";
+  models?: string[];
+  modelSource?: "requested" | "mapped";
+  protocol?: import("./ai.js").Protocol;
+  value?: number;
+  yes: string;
+  no: string;
+};
+export type LegacyChannelWorkflow = Omit<ChannelWorkflow, "nodes"> & {
+  nodes: (WorkflowNode | LegacyWorkflowCondition)[];
+};
+
 /** Convert legacy request conditions into a data predicate and a boolean branch. */
-export function migrateWorkflowConditions(flow: ChannelWorkflow): ChannelWorkflow {
+export function migrateWorkflowConditions(
+  flow: LegacyChannelWorkflow,
+): ChannelWorkflow {
   const oldConditions = flow.nodes.filter((node) => node.type === "condition");
-  if (!oldConditions.length) return flow;
+  if (!oldConditions.length) return flow as ChannelWorkflow;
 
   const used = new Set(flow.nodes.map((node) => node.id));
   const predicateIds = new Map<string, string>();
@@ -16,13 +33,23 @@ export function migrateWorkflowConditions(flow: ChannelWorkflow): ChannelWorkflo
     predicateIds.set(node.id, id);
   }
 
-  const fields = new Set(["test", "models", "modelSource", "protocol", "value"]);
+  const fields = new Set([
+    "test",
+    "models",
+    "modelSource",
+    "protocol",
+    "value",
+  ]);
   const nodes = flow.nodes.flatMap<unknown>((node) => {
     if (node.type !== "condition") return [structuredClone(node)];
     const { id, type: _type, yes, no, ...predicate } = node;
     return [
       { id, type: "branch", condition: false, yes, no },
-      { id: predicateIds.get(id)!, type: "predicate", ...structuredClone(predicate) },
+      {
+        id: predicateIds.get(id)!,
+        type: "predicate",
+        ...structuredClone(predicate),
+      },
     ];
   });
   const bindings = (flow.bindings ?? []).map((binding) => ({
@@ -41,9 +68,14 @@ export function migrateWorkflowConditions(flow: ChannelWorkflow): ChannelWorkflo
       const point = layout[oldId];
       if (point) {
         const candidate = { x: point.x - 370, y: point.y };
-        while (Object.values(layout).some((other) =>
-          Math.abs(other.x - candidate.x) < 340 && Math.abs(other.y - candidate.y) < 240,
-        )) candidate.y += 260;
+        while (
+          Object.values(layout).some(
+            (other) =>
+              Math.abs(other.x - candidate.x) < 340 &&
+              Math.abs(other.y - candidate.y) < 240,
+          )
+        )
+          candidate.y += 260;
         layout[newId] = candidate;
       }
     }
