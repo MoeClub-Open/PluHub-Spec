@@ -1,72 +1,67 @@
-import type { ChannelWorkflow, WorkflowNode } from "./workflow.js";
+import type {
+  ChannelWorkflow,
+  WorkflowBinding,
+  WorkflowNode,
+} from "./workflow.js";
 
-export type LegacyWorkflowCondition = {
+export type LegacyWorkflowPredicate = {
   id: string;
-  type: "condition";
+  type: "predicate";
   test: "hasTools" | "stream" | "textLengthAbove" | "protocol" | "model";
   models?: string[];
   modelSource?: "requested" | "mapped";
   protocol?: import("./ai.js").Protocol;
   value?: number;
+};
+export type LegacyWorkflowCondition = Omit<LegacyWorkflowPredicate, "type"> & {
+  type: "condition";
   yes: string;
   no: string;
 };
 export type LegacyChannelWorkflow = Omit<ChannelWorkflow, "nodes"> & {
-  nodes: (WorkflowNode | LegacyWorkflowCondition)[];
+  nodes: (WorkflowNode | LegacyWorkflowPredicate | LegacyWorkflowCondition)[];
 };
 
-/** Convert legacy request conditions into a data predicate and a boolean branch. */
+/** Replace request-specific conditions with ordinary typed comparisons. */
 export function migrateWorkflowConditions(
   flow: LegacyChannelWorkflow,
 ): ChannelWorkflow {
-  const oldConditions = flow.nodes.filter((node) => node.type === "condition");
-  if (!oldConditions.length) return flow as ChannelWorkflow;
-
+  const legacy = flow.nodes.filter(
+    (node) => node.type === "condition" || node.type === "predicate",
+  );
+  if (!legacy.length) return flow as ChannelWorkflow;
   const used = new Set(flow.nodes.map((node) => node.id));
-  const predicateIds = new Map<string, string>();
-  for (const node of oldConditions) {
-    const prefix = node.id.slice(0, 108) + "-predicate";
-    let id = prefix;
-    let suffix = 1;
-    while (used.has(id)) id = `${prefix}-${suffix++}`;
-    used.add(id);
-    predicateIds.set(node.id, id);
-  }
-
-  const fields = new Set([
-    "test",
-    "models",
-    "modelSource",
-    "protocol",
-    "value",
-  ]);
-  const nodes = flow.nodes.flatMap<unknown>((node) => {
-    if (node.type !== "condition") return [structuredClone(node)];
-    const { id, type: _type, yes, no, ...predicate } = node;
-    return [
-      { id, type: "branch", condition: false, yes, no },
-      {
-        id: predicateIds.get(id)!,
-        type: "predicate",
-        ...structuredClone(predicate),
-      },
-    ];
-  });
-  const bindings = (flow.bindings ?? []).map((binding) => ({
-    ...binding,
-    target:
-      predicateIds.has(binding.target) && fields.has(binding.input)
-        ? predicateIds.get(binding.target)!
-        : binding.target,
-  }));
-  for (const [target, source] of predicateIds)
-    bindings.push({ source, output: "result", target, input: "condition" });
-
+  const comparisons = new Map<string, { id: string; field?: string }>();
+  const added: WorkflowBinding[] = [];
   const layout = flow.layout && structuredClone(flow.layout);
-  if (layout)
-    for (const [oldId, newId] of predicateIds) {
-      const point = layout[oldId];
-      if (point) {
+  const literal = (id: string, field: string, fallback: unknown): unknown => {
+    const binding = flow.bindings?.find(
+      (item) => item.target === id && item.input === field,
+    );
+    if (!binding) return fallback;
+    const node = flow.nodes.find((item) => item.id === binding.source);
+    if (node?.type !== "value" || binding.output !== "value")
+      throw new Error(`旧条件的 ${field} 需要先固定为参数值：${id}`);
+    return literal(node.id, "value", node.value);
+  };
+  const nodes = flow.nodes.flatMap<WorkflowNode>((node) => {
+    if (node.type !== "condition" && node.type !== "predicate")
+      return [structuredClone(node)];
+    let id = node.id;
+    if (node.type === "condition") {
+      const prefix = node.id.slice(0, 110) + "-compare";
+      id = prefix;
+      let suffix = 1;
+      while (used.has(id)) id = `${prefix}-${suffix++}`;
+      used.add(id);
+      added.push({
+        source: id,
+        output: "result",
+        target: node.id,
+        input: "condition",
+      });
+      if (layout?.[node.id]) {
+        const point = layout[node.id]!;
         const candidate = { x: point.x - 370, y: point.y };
         while (
           Object.values(layout).some(
@@ -76,14 +71,93 @@ export function migrateWorkflowConditions(
           )
         )
           candidate.y += 260;
-        layout[newId] = candidate;
+        layout[id] = candidate;
       }
     }
-
+    const test = literal(node.id, "test", node.test);
+    let output: string, field: string | undefined;
+    let compare: Extract<WorkflowNode, { type: "compare" }>;
+    switch (test) {
+      case "model":
+        output =
+          literal(node.id, "modelSource", node.modelSource) === "mapped"
+            ? "mappedModel"
+            : "requestedModel";
+        field = "models";
+        compare = {
+          id,
+          type: "compare",
+          valueType: "string",
+          operator: "matches",
+          left: "",
+          right: node.models ?? [],
+        };
+        break;
+      case "protocol":
+        output = "ingressProtocol";
+        field = "protocol";
+        compare = {
+          id,
+          type: "compare",
+          valueType: "string",
+          operator: "eq",
+          left: "",
+          right: node.protocol ?? "",
+        };
+        break;
+      case "textLengthAbove":
+        output = "textLength";
+        field = "value";
+        compare = {
+          id,
+          type: "compare",
+          valueType: "number",
+          operator: "gt",
+          left: 0,
+          right: node.value ?? 0,
+        };
+        break;
+      case "hasTools":
+      case "stream":
+        output = test;
+        compare = {
+          id,
+          type: "compare",
+          valueType: "boolean",
+          operator: "eq",
+          left: false,
+          right: true,
+        };
+        break;
+      default:
+        throw new Error(`旧条件的判断类型无效：${node.id}`);
+    }
+    comparisons.set(node.id, { id, field });
+    added.push({ source: flow.entry, output, target: id, input: "left" });
+    return node.type === "condition"
+      ? [
+          {
+            id: node.id,
+            type: "branch",
+            condition: false,
+            yes: node.yes,
+            no: node.no,
+          },
+          compare,
+        ]
+      : [compare];
+  });
+  const bindings = (flow.bindings ?? []).flatMap((binding) => {
+    const comparison = comparisons.get(binding.target);
+    if (!comparison) return [{ ...binding }];
+    return binding.input === comparison.field
+      ? [{ ...binding, target: comparison.id, input: "right" }]
+      : [];
+  });
   return {
     ...flow,
-    nodes: nodes as unknown as WorkflowNode[],
-    bindings,
+    nodes,
+    bindings: [...bindings, ...added],
     ...(layout ? { layout } : {}),
   };
 }

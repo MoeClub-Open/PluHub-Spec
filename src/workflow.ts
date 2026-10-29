@@ -79,15 +79,6 @@ export type WorkflowNode =
   | { id: string; type: "branch"; condition: boolean; yes: string; no: string }
   | {
       id: string;
-      type: "predicate";
-      test: "hasTools" | "stream" | "textLengthAbove" | "protocol" | "model";
-      models?: string[];
-      modelSource?: "requested" | "mapped";
-      protocol?: Protocol;
-      value?: number;
-    }
-  | {
-      id: string;
       type: "compare";
       valueType: "string" | "number" | "boolean";
       operator: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "matches";
