@@ -1,7 +1,7 @@
 /** Optional identity service contracts; Kernel remains independent of authentication methods. */
 export interface CaptchaOptions {
   enabled: boolean;
-  /** Omitted by legacy providers; defaults to Turnstile. */
+  /** Defaults to Turnstile when no provider is configured. */
   provider?: "turnstile" | "recaptcha" | "hcaptcha" | "geetest";
   siteKey?: string;
   recaptchaVersion?: "v2" | "v3";
@@ -33,6 +33,4 @@ export interface AuthenticationOptions {
   webauthnEnabled: boolean;
   captcha: { login?: boolean; register?: boolean; email?: boolean };
   captchaProvider?: CaptchaOptions;
-  /** Legacy alias, provided only when Turnstile is selected. */
-  turnstile?: CaptchaOptions;
 }
