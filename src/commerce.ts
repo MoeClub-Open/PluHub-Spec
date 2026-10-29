@@ -92,6 +92,12 @@ export interface PaymentBalanceState {
   revision: number;
 }
 
+/** Historical ledger facts, independent of gifted balances and request-log retention. */
+export interface BillingCustomerStatus {
+  paid: boolean;
+  consumed: boolean;
+}
+
 /** Financial facts from the billing ledger, independent of request log retention. */
 export interface RequestCharge {
   note?: string;

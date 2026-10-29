@@ -158,6 +158,8 @@ export interface ModelPricing {
   tiers?: (TokenPrices & { above: number })[];
 }
 export interface RequestPricing extends TokenPrices, ModelPricing {
+  /** A platform handling fee, separate from a personal provider's model cost. */
+  purpose?: "personal-fee";
   /** Consumption multiplier; original prices remain unchanged. */
   multiplier?: number;
   /** Immutable group snapshot; its factor is already included in multiplier. */
@@ -299,6 +301,8 @@ export interface ModelDefinition {
 }
 /** A channel's public alias maps to this upstream model and its original definition. */
 export interface ModelRoute extends ModelDefinition {
+  /** Directory visibility only; execution keeps its normal authorization and billing rules. */
+  visibility?: "authenticated" | "consumed" | "paid";
   /** Shared client-facing name; the configuration map key remains a stable route ID. */
   publicModel?: string;
   upstream: string;
@@ -389,6 +393,8 @@ export interface ServiceGroup {
 }
 
 export interface CatalogModel {
+  /** Platform handling fee in USD per personal-channel provider request. */
+  requestFee?: number;
   reasoningEfforts?: ReasoningEffort[];
   /** Internal route identity and scheduling metadata; omit from public HTTP responses. */
   routeId?: string;
