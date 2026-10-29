@@ -52,6 +52,8 @@ export type WorkflowNode =
       recordResponseModel?: boolean;
       upstream?: ProviderConnection;
       model?: string;
+      /** Channel model ID -> this node's upstream model ID. An explicit map is exhaustive. */
+      modelMap?: Record<string, string>;
       /** Evaluated personal-channel interface settings; not persisted in provider nodes. */
       interfaces?: UpstreamInterface[];
       /** Optional error edge to a platform group terminal, before any output. */
