@@ -97,7 +97,7 @@ export interface RequestCharge {
   note?: string;
   requestId: string;
   userId: string;
-  status: "reserved" | "review" | "released" | "settled";
+  status: "reserved" | "released" | "settled";
   /** USD micro-units; null until the request is settled or released. */
   charged: number | null;
   held: number;
