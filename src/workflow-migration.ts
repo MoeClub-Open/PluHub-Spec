@@ -19,17 +19,25 @@ export type LegacyWorkflowCondition = Omit<LegacyWorkflowPredicate, "type"> & {
   no: string;
 };
 export type LegacyChannelWorkflow = Omit<ChannelWorkflow, "nodes"> & {
-  nodes: (WorkflowNode | LegacyWorkflowPredicate | LegacyWorkflowCondition)[];
+  nodes: (
+    | WorkflowNode
+    | { id: string; type: "start"; next: string }
+    | LegacyWorkflowPredicate
+    | LegacyWorkflowCondition
+  )[];
 };
 
-/** Replace request-specific conditions with ordinary typed comparisons. */
+/** Migrate old request conditions and scalar entry connections to the current graph. */
 export function migrateWorkflowConditions(
   flow: LegacyChannelWorkflow,
 ): ChannelWorkflow {
   const legacy = flow.nodes.filter(
     (node) => node.type === "condition" || node.type === "predicate",
   );
-  if (!legacy.length) return flow as ChannelWorkflow;
+  const oldEntry = flow.nodes.some(
+    (node) => node.type === "start" && typeof node.next === "string",
+  );
+  if (!legacy.length && !oldEntry) return flow as ChannelWorkflow;
   const used = new Set(flow.nodes.map((node) => node.id));
   const comparisons = new Map<string, { id: string; field?: string }>();
   const added: WorkflowBinding[] = [];
@@ -45,6 +53,13 @@ export function migrateWorkflowConditions(
     return literal(node.id, "value", node.value);
   };
   const nodes = flow.nodes.flatMap<WorkflowNode>((node) => {
+    if (node.type === "start")
+      return [
+        {
+          ...node,
+          next: typeof node.next === "string" ? [node.next] : [...node.next],
+        },
+      ];
     if (node.type !== "condition" && node.type !== "predicate")
       return [structuredClone(node)];
     let id = node.id;

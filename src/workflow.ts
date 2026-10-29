@@ -6,8 +6,14 @@ import type {
   Protocol,
   UpstreamInterface,
 } from "./ai.js";
-import type { WorkflowDataNode, WorkflowResponseNode } from "./workflow-data.js";
-export type { WorkflowDataNode, WorkflowResponseNode } from "./workflow-data.js";
+import type {
+  WorkflowDataNode,
+  WorkflowResponseNode,
+} from "./workflow-data.js";
+export type {
+  WorkflowDataNode,
+  WorkflowResponseNode,
+} from "./workflow-data.js";
 
 type Linear = { id: string; next: string };
 export type WorkflowValueType =
@@ -44,7 +50,7 @@ export interface OutputPaceRule {
   inheritDefault?: boolean;
 }
 export type WorkflowNode =
-  | (Linear & { type: "start" })
+  | { id: string; type: "start"; next: string[] }
   /** Execute this channel's configured provider and mapped model. */
   | {
       id: string;
