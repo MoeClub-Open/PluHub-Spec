@@ -21,11 +21,11 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 
 `observability.model-metrics@1` 按目录指定的平台模型与渠道聚合近 24 小时数据，排除个人渠道。延迟只统计成功请求，首 Token 延迟与输出 TPS 只统计流式请求；TPS 使用排除思考 Token 后的可见输出 Token 除以首末输出内容事件间的总秒数，单块响应不计入。缓存命中率以明确报告缓存读取用量的成功请求为分母，未知用量不当作未命中。公开目录提供渠道 ID、名称、倍率、计费价格和汇总指标，不提供连接配置、上游地址或凭证。模型原价与渠道计费价格分别保留，试算使用渠道计费价格与消耗倍率。
 
-`ai.routing@2` 与 `ai.catalog@2` 共用授权范围。平台密钥使用 `groupId`，由 Router 校验分组启停、用户和目标渠道；个人密钥使用 `channelIds`，只能读取拥有者的个人渠道。`channelId` 是当前范围内的显式选择，`x-pluhub-channel` 不能扩大范围，客户端请求体不能覆盖可信授权。未指定分组的登录会话使用默认分组。旧平台渠道绑定通过离线迁移改为受限分组，不作为另一种业务模式延续。标准 `/v1/models` 对重复模型 ID 保留默认匹配项。
+`ai.routing@3` 与 `ai.catalog@3` 共用直接渠道范围 `channelIds`；空列表默认使用平台渠道。`channelId` 是该范围内的显式选择，`x-pluhub-channel` 不能扩大密钥权限。个人渠道仍校验拥有者，默认平台密钥不能借请求头调用未绑定的个人渠道。标准 `/v1/models` 对重复模型 ID 保留默认匹配项。
 
-`RoutingRequest.operation` 指定没有完整请求时的试算端点，实际执行仍从解码后的请求获取端点。`RoutingRequest.purpose: "quote"` 解析最终价格而不调用生成接口、远程决策器或凭证租约；条件图没有请求内容时返回 `quote_request_required`，自动路由尚未确定目标时返回 `quote_route_required`。普通执行、自动路由候选及试算共用路径解析、分组与协议检查。`AutoRoutingInput.consumptionMultiplier` 携带入口渠道倍率，使候选价格与最终计费一致；分组倍率在此基础上应用。输出节拍统一使用 `ai.output-pace@2`，自动选型仅使用 `ai.auto-routing@1`，旧能力绑定由离线迁移移除或更新。
+`RoutingRequest.operation` 指定没有完整请求时的试算端点，实际执行仍从解码后的请求获取端点。`RoutingRequest.purpose: "quote"` 解析最终价格而不调用生成接口、远程决策器或凭证租约；条件图没有请求内容时返回 `quote_request_required`，自动路由尚未确定目标时返回 `quote_route_required`。普通执行、自动路由候选及试算共用路径解析、渠道与协议检查。`AutoRoutingInput.consumptionMultiplier` 携带入口渠道倍率，使候选价格与最终计费一致。输出节拍统一使用 `ai.output-pace@2`，自动选型仅使用 `ai.auto-routing@1`，旧能力绑定由离线迁移移除或更新。
 
-`ModelPricing.mode: "expression"` 以 `expression` 定义价格，不能混入 `request`、`tiers` 或独立缓存价格表。表达式的 Token 系数为 USD / 百万 Token，`fixed()` 为 USD / 次；渠道与使用分组倍率在表达式金额之后应用。`PricingContext` 固定请求开始时间和所需标量参数、请求头，随路由、预留及结算传递。时间、参数和请求头不在结算时重新读取；最终快照仅保留表达式引用的标量事实，不保留提示词或认证凭证。计费档位、表达式、归一化用量与上下文随账本和调用日志保存。
+`ModelPricing.mode: "expression"` 以 `expression` 定义价格，不能混入 `request`、`tiers` 或独立缓存价格表。表达式的 Token 系数为 USD / 百万 Token，`fixed()` 为 USD / 次；渠道倍率在表达式金额之后应用。`PricingContext` 固定请求开始时间和所需标量参数、请求头，随路由、预留及结算传递。时间、参数和请求头不在结算时重新读取；最终快照仅保留表达式引用的标量事实，不保留提示词或认证凭证。计费档位、表达式、归一化用量与上下文随账本和调用日志保存。
 
 `/subscription` 的 `SubscriptionQuota` 支持提供商自有的周期标识、可选展示名称与更新时间，兼容既有 `primary`、`secondary` 周期，用于展示模型或功能专属的订阅额度。
 
@@ -61,6 +61,6 @@ Manifest v1 的可选 `ui.group`、`ui.order` 支持控制台聚合设置；`ui.
 
 `ModelDefinition` 包含模型展示、能力与原价，`ModelRoute` 在其上增加渠道映射和启停状态。平台和个人渠道共用定义与价格校验，渠道倍率独立保留。旧工作流插件由离线迁移转换为渠道节点，不再暴露 `ai.workflow@1` 或 `ai.converter@1`。
 
-`/workflow` 增加个人渠道专用的 `platform` 终点（`groupId`、可选 `model`）和 `provider.fallback` 错误边；图校验要求备用出口指向平台分组且不能形成环。`AIPlan.fallback` 是受信任的延后路由请求，`attempts` 记录切换前失败的目标。入口只能在首事件前明确拒绝时执行这条路线，并重新进行限流、分组授权和资金准入。`CatalogModel.reasoningEfforts` 用于呈现模型声明的思考强度；`RequestCharge.note` 提供账本结算说明，不由观测插件猜测结算状态。
+`/workflow` 的个人渠道 `platform` 终点使用目标 `channelId` 和可选 `model`；`provider.fallback` 在首事件前明确拒绝后才执行备用路线，并重新进行渠道、限流和资金准入。`AIPlan.fallback` 是受信任的延后路由请求，`attempts` 保留失败目标。`CatalogModel.reasoningEfforts` 声明支持的思考强度，`RequestCharge.note` 说明账本结算依据。
 
 宿主 `0.1.0-alpha.16` 支持 `Host.secret` 读取 `secret:` 托管凭据；授权仍由 `secrets.read` 和插件配置的 `secretRefs` 共同决定。业务参数通过请求、能力调用参数或配置传递。

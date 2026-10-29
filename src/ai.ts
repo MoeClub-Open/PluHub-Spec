@@ -162,8 +162,6 @@ export interface RequestPricing extends TokenPrices, ModelPricing {
   purpose?: "personal-fee";
   /** Consumption multiplier; original prices remain unchanged. */
   multiplier?: number;
-  /** Immutable group snapshot; its factor is already included in multiplier. */
-  serviceGroup?: { id: string; name: string; multiplier: number };
   /** Frozen request facts used by expression reservation, settlement and audit. */
   context?: PricingContext;
 }
@@ -382,16 +380,6 @@ export interface ModelRedirect {
   enabled?: boolean;
 }
 
-export interface ServiceGroup {
-  name: string;
-  enabled?: boolean;
-  /** Omitted only for the built-in default group, which includes all platform channels. */
-  channelIds?: string[];
-  multiplier?: number;
-  /** Omitted means public access; an empty list allows no users. */
-  userIds?: string[];
-}
-
 export interface CatalogModel {
   /** Platform handling fee in USD per personal-channel provider request. */
   requestFee?: number;
@@ -408,7 +396,6 @@ export interface CatalogModel {
   outputPrice?: number;
   pricing?: ModelPricing;
   consumptionMultiplier?: number;
-  serviceGroup?: RequestPricing["serviceGroup"];
   /** Public channel identity, without provider connection or credential details. */
   channel?: { id: string; name: string; scope: "platform" | "personal" };
   /** Channel billing rates before the consumption multiplier is applied. */
@@ -437,10 +424,8 @@ export interface RoutingRequest {
   principalId?: string;
   /** Explicit channel, or the sole member of an API key binding. */
   channelId?: string;
-  /** ai.routing@2: trusted API key channel allowlist; empty/absent retains platform default routing. */
+  /** ai.routing@3: trusted API key channel allowlist; empty/absent retains platform default routing. */
   channelIds?: readonly string[];
-  /** Trusted platform service-group binding. Personal keys use channelIds instead. */
-  groupId?: string;
   /** Trusted ingress scalar request facts; the final pricing snapshot retains only referenced keys. */
   pricingContext?: PricingContext;
   /** Only virtual task-aware providers consume the request content. */

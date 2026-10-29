@@ -62,10 +62,10 @@ export type WorkflowNode =
       modelMap?: Record<string, string>;
       /** Evaluated personal-channel interface settings; not persisted in provider nodes. */
       interfaces?: UpstreamInterface[];
-      /** Optional error edge to a platform group terminal, before any output. */
+      /** Optional error edge to a platform channel terminal, before any output. */
       fallback?: string;
     }
-  | { id: string; type: "platform"; groupId: string; model?: string }
+  | { id: string; type: "platform"; channelId: string; model?: string }
   | { id: string; type: "routing"; profile: string }
   | {
       id: string;
@@ -141,8 +141,8 @@ export interface WorkflowResult {
   provider?: boolean;
   providerId?: string;
   providerNode?: Extract<WorkflowNode, { type: "provider" }>;
-  platformGroup?: { groupId: string; model?: string };
-  fallback?: { groupId: string; model?: string };
+  platformChannel?: { channelId: string; model?: string };
+  fallback?: { channelId: string; model?: string };
   routingProfile?: string;
   mode: "implicit" | "explicit";
   trace: { profile: string; nodes: string[] };
