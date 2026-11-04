@@ -1,4 +1,4 @@
-import type { Message } from "./ai.js";
+import type { Message, Protocol } from "./ai.js";
 
 /** Values and calls in a workflow are connected independently of its execution path. */
 export type WorkflowDataNode =
@@ -27,7 +27,7 @@ export type WorkflowDataNode =
       channelId?: string;
       /** Required for a dynamically selected model; every target is still authorized. */
       allowedModels?: string[];
-      protocol?: "openai-chat" | "openai-responses" | "anthropic";
+      protocol?: Protocol;
       /** Omitted messages inherit the original conversation. */
       messages?: Message[];
       prompt?: string;

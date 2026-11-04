@@ -97,25 +97,3 @@ export interface BillingCustomerStatus {
   paid: boolean;
   consumed: boolean;
 }
-
-/** Financial facts from the billing ledger, independent of request log retention. */
-export interface RequestCharge {
-  note?: string;
-  requestId: string;
-  userId: string;
-  status: "reserved" | "released" | "settled";
-  /** USD micro-units; null until the request is settled or released. */
-  charged: number | null;
-  held: number;
-  receipt?: Record<string, unknown>;
-}
-
-/** Aggregated ledger facts for a caller-scoped set of request identities. */
-export interface RequestChargeTotals {
-  /** Requests with a posted charge or an explicitly released reservation. */
-  knownRequests: number;
-  pendingRequests: number;
-  /** Sum of posted charges, in USD micro-units; excludes pending reservations. */
-  charged: number;
-  held: number;
-}

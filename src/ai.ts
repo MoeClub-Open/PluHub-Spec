@@ -160,8 +160,6 @@ export interface ModelPricing {
 export interface RequestPricing extends TokenPrices, ModelPricing {
   /** A platform handling fee, separate from a personal provider's model cost. */
   purpose?: "personal-fee";
-  /** Consumption multiplier; original prices remain unchanged. */
-  multiplier?: number;
   /** Frozen request facts used by expression reservation, settlement and audit. */
   context?: PricingContext;
 }
@@ -271,7 +269,6 @@ export interface Upstream {
   authMode?: "siwc" | "cli";
   /** Personal connections must resolve to public IPs at connection time. */
   publicOnly?: boolean;
-  consumptionMultiplier?: number;
 }
 /** A provider connection is a graph node setting, never a channel type. */
 export type ProviderConnection = Omit<Upstream, "flow" | "protocol"> & {
@@ -306,9 +303,6 @@ export interface ModelRoute extends ModelDefinition {
   upstream: string;
   model: string;
   enabled?: boolean;
-  /** Personal channel consumption prices, distinct from original model prices. */
-  effectiveInputPrice?: number;
-  effectiveOutputPrice?: number;
 }
 
 interface AIPlanBase {
@@ -374,12 +368,6 @@ export interface AIResponsePlan extends AIPlanBase {
 /** Routing yields an executable provider, an admitted workflow, or computed text. */
 export type AIPlan = AIProviderPlan | AIWorkflowPlan | AIResponsePlan;
 
-export interface ModelRedirect {
-  target: string;
-  mode: "implicit" | "explicit";
-  enabled?: boolean;
-}
-
 export interface CatalogModel {
   /** Platform handling fee in USD per personal-channel provider request. */
   requestFee?: number;
@@ -395,11 +383,8 @@ export interface CatalogModel {
   inputPrice?: number;
   outputPrice?: number;
   pricing?: ModelPricing;
-  consumptionMultiplier?: number;
   /** Public channel identity, without provider connection or credential details. */
   channel?: { id: string; name: string; scope: "platform" | "personal" };
-  /** Channel billing rates before the consumption multiplier is applied. */
-  billing?: RequestPricing;
   /** Internal catalog association; omit from public HTTP responses. */
   channelId?: string;
   metrics?: import("./analytics.js").ModelMetrics;

@@ -50,6 +50,4 @@ export interface AutoRoutingInput {
   request: AIRequest;
   principalId?: string;
   allowedChannelIds?: readonly string[];
-  /** Entry channel factor used consistently for candidate comparison and final billing. */
-  consumptionMultiplier?: number;
 }

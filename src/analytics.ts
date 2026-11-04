@@ -21,7 +21,7 @@ export interface RankingQuery {
   kind: RankingKind;
   metric: RankingMetric;
   range: RankingRange;
-  userIds: string[];
+  userIds?: string[];
   modelIds?: string[];
   viewerId?: string;
 }
