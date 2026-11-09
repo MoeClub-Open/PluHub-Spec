@@ -144,6 +144,8 @@ export interface TokenPrices {
   cacheWrite1h?: number;
 }
 export interface ModelPricing {
+  /** Applies to the complete model charge before the final micro-USD rounding; defaults to 1. */
+  multiplier?: number;
   mode?: "tokens" | "request" | "expression";
   /** Tier-selected arithmetic; token coefficients are USD / 1M, fixed() is USD / request. */
   expression?: string;
