@@ -36,6 +36,8 @@ export interface PaymentProviderStatus {
   currencies: string[] | "*";
   modes: Product["mode"][];
   renewal: "automatic" | "manual";
+  /** Convert catalog prices before checkout; persist the converted price with the order. */
+  conversion?: { from: string; to: string; rate: number };
   cancelSubscription?: boolean;
   customerPortal?: boolean;
   recheckAdjustments?: boolean;
